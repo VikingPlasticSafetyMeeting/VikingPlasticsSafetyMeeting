@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Viking Plastics Safety Meeting</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <style>
         :root {
             --primary-blue: #004A8F;
@@ -18,24 +16,16 @@
             --button-color: #004A8F;
             --button-hover: #003a70;
             --section-padding: 30px 20px;
-            --success-green: #28a745;
-            --sync-blue: #1e88e5;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
         }
 
         body {
             font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
             background-color: var(--light-gray);
             color: var(--dark-text);
             line-height: 1.6;
             background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
-            min-height: 100vh;
-            padding-bottom: 80px;
         }
 
         header {
@@ -67,36 +57,7 @@
             text-align: center;
             white-space: nowrap;
             flex: 1;
-            padding: 0 60px;
-            letter-spacing: 0.5px;
-        }
-
-        .sync-status {
-            background-color: var(--sync-blue);
-            color: white;
-            text-align: center;
-            padding: 8px;
-            font-weight: 500;
-            position: sticky;
-            top: 70px;
-            z-index: 999;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .sync-status.synced {
-            background-color: var(--success-green);
-        }
-
-        .sync-status span {
-            display: inline-block;
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background-color: white;
+            padding: 0 60px; /* Added padding to center properly */
         }
 
         .container {
@@ -128,9 +89,6 @@
             border-bottom: 2px solid var(--primary-blue);
             padding-bottom: 10px;
             font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 10px;
         }
 
         h3 {
@@ -348,7 +306,7 @@
         .save-meeting-btn-container {
             text-align: center;
             margin-top: 30px;
-            margin-bottom: 20px;
+            margin-bottom: 50px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -391,6 +349,7 @@
             position: absolute;
         }
 
+        /* Fixed animation size */
         .save-meeting-btn .viking-animated-text {
             position: absolute;
             top: 50%;
@@ -398,7 +357,7 @@
             transform: translate(-50%, -50%) scale(0.8);
             opacity: 0;
             color: #ffffff;
-            font-size: 1.4em;
+            font-size: 1.4em; /* Adjusted size */
             font-weight: 900;
             white-space: nowrap;
             pointer-events: none;
@@ -468,12 +427,14 @@
             }
         }
 
+        /* Date buttons container */
         .date-controls {
             display: flex;
             gap: 10px;
             margin-top: 10px;
         }
 
+        /* Clear date button style */
         .clear-date-btn {
             background-color: #dc3545;
             color: white;
@@ -488,6 +449,7 @@
             background-color: #c82333;
         }
         
+        /* Export buttons */
         .export-buttons {
             display: flex;
             gap: 10px;
@@ -497,7 +459,6 @@
         
         .export-btn {
             background-color: #28a745;
-            color: white;
             padding: 10px 20px;
             border-radius: 5px;
             font-weight: 600;
@@ -515,6 +476,7 @@
             font-size: 1.2em;
         }
         
+        /* Footer */
         footer {
             text-align: center;
             padding: 20px;
@@ -522,11 +484,6 @@
             font-size: 0.9em;
             margin-top: 30px;
             border-top: 1px solid #ddd;
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: white;
         }
 
         /* Mobile Responsiveness */
@@ -541,7 +498,7 @@
                 position: relative;
                 left: auto;
                 margin-right: 0;
-                margin-bottom: 10px;
+                margin-bottom: 5px;
             }
             header h1 {
                 font-size: 1.8em;
@@ -604,12 +561,6 @@
             .export-buttons {
                 flex-direction: column;
             }
-            
-            .sync-status {
-                top: 60px;
-                font-size: 0.9em;
-                padding: 6px;
-            }
         }
     </style>
 </head>
@@ -618,10 +569,6 @@
         <img src="vikinglogo.png" alt="Viking Plastics Logo" class="logo">
         <h1>Viking Plastics Safety Meeting</h1>
     </header>
-
-    <div class="sync-status">
-        <span></span> Connecting to server...
-    </div>
 
     <div class="container">
         <section>
@@ -655,7 +602,8 @@
                 <button onclick="addMember()">Add Member</button>
             </div>
             <div class="table-controls">
-                <button class="clear-table-btn" onclick="clearTable('membersPresent')">Clear All Members</button>
+                <button class="clear-table-btn" onclick="clearTable('membersPresentTableBody', this)">Clear All Members</button>
+                <button class="save-table-btn" id="saveMembersBtn" onclick="saveTable('membersPresent', this)">Save Table</button>
             </div>
             <div class="data-table-container">
                 <table>
@@ -678,10 +626,11 @@
             <p>Ongoing safety issues that are still unresolved from previous meetings.</p>
             <div class="input-controls">
                 <textarea id="oldActionItemInput" class="input-field" placeholder="Enter old action item details..."></textarea>
-                <button onclick="addEntry('oldActionItemInput', 'oldActionItems')">Add Item</button>
+                <button onclick="addEntry('oldActionItemInput', 'oldActionItemsTableBody', 'oldActionItems')">Add Item</button>
             </div>
             <div class="table-controls">
-                <button class="clear-table-btn" onclick="clearTable('oldActionItems')">Clear All Items</button>
+                <button class="clear-table-btn" onclick="clearTable('oldActionItemsTableBody', this)">Clear All Items</button>
+                <button class="save-table-btn" id="saveOldActionsBtn" onclick="saveTable('oldActionItems', this)">Save Table</button>
             </div>
             <div class="data-table-container">
                 <table>
@@ -703,10 +652,11 @@
             <p>Newly assigned safety tasks or topics brought up in this meeting.</p>
             <div class="input-controls">
                 <textarea id="newActionItemInput" class="input-field" placeholder="Enter new action item details..."></textarea>
-                <button onclick="addEntry('newActionItemInput', 'newActionItems')">Add Item</button>
+                <button onclick="addEntry('newActionItemInput', 'newActionItemsTableBody', 'newActionItems')">Add Item</button>
             </div>
             <div class="table-controls">
-                <button class="clear-table-btn" onclick="clearTable('newActionItems')">Clear All Items</button>
+                <button class="clear-table-btn" onclick="clearTable('newActionItemsTableBody', this)">Clear All Items</button>
+                <button class="save-table-btn" id="saveNewActionsBtn" onclick="saveTable('newActionItems', this)">Save Table</button>
             </div>
             <div class="data-table-container">
                 <table>
@@ -728,10 +678,11 @@
             <p>Safety items or actions that were completed since the last meeting.</p>
             <div class="input-controls">
                 <textarea id="completedActionInput" class="input-field" placeholder="Enter completed action details..."></textarea>
-                <button onclick="addEntry('completedActionInput', 'completedActions')">Add Item</button>
+                <button onclick="addEntry('completedActionInput', 'completedActionsTableBody', 'completedActions')">Add Item</button>
             </div>
             <div class="table-controls">
-                <button class="clear-table-btn" onclick="clearTable('completedActions')">Clear All Items</button>
+                <button class="clear-table-btn" onclick="clearTable('completedActionsTableBody', this)">Clear All Items</button>
+                <button class="save-table-btn" id="saveCompletedActionsBtn" onclick="saveTable('completedActions', this)">Save Table</button>
             </div>
             <div class="data-table-container">
                 <table>
@@ -753,10 +704,11 @@
             <p>A field to write in incident details. Once submitted, it will populate the table below.</p>
             <div class="input-controls">
                 <textarea id="incidentDetails" class="input-field" placeholder="Enter incident/accident details..."></textarea>
-                <button onclick="addEntry('incidentDetails', 'incidents')">Add Incident</button>
+                <button onclick="addEntry('incidentDetails', 'incidentTableBody', 'incidents')">Add Incident</button>
             </div>
             <div class="table-controls">
-                <button class="clear-table-btn" onclick="clearTable('incidents')">Clear All Incidents</button>
+                <button class="clear-table-btn" onclick="clearTable('incidentTableBody', this)">Clear All Incidents</button>
+                <button class="save-table-btn" id="saveIncidentsBtn" onclick="saveTable('incidents', this)">Save Table</button>
             </div>
 
             <div class="data-table-container">
@@ -779,10 +731,11 @@
             <p>Submit any ideas or suggestions to improve safety at the plant.</p>
             <div class="input-controls">
                 <textarea id="safetyIdeaInput" class="input-field" placeholder="Enter your safety idea..."></textarea>
-                <button onclick="addEntry('safetyIdeaInput', 'safetyIdeas')">Add Idea</button>
+                <button onclick="addEntry('safetyIdeaInput', 'safetyIdeasTableBody', 'safetyIdeas')">Add Idea</button>
             </div>
             <div class="table-controls">
-                <button class="clear-table-btn" onclick="clearTable('safetyIdeas')">Clear All Ideas</button>
+                <button class="clear-table-btn" onclick="clearTable('safetyIdeasTableBody', this)">Clear All Ideas</button>
+                <button class="save-table-btn" id="saveSafetyIdeasBtn" onclick="saveTable('safetyIdeas', this)">Save Table</button>
             </div>
             <div class="data-table-container">
                 <table>
@@ -806,10 +759,11 @@
             <p>What your plant does very well regarding safety.</p>
             <div class="input-controls">
                 <input type="text" id="strengthDetail" class="input-field" placeholder="Enter a key safety strength...">
-                <button onclick="addEntry('strengthDetail', 'strengths')">Add Strength</button>
+                <button onclick="addEntry('strengthDetail', 'strengthTableBody', 'strengths')">Add Strength</button>
             </div>
             <div class="table-controls">
-                <button class="clear-table-btn" onclick="clearTable('strengths')">Clear All Strengths</button>
+                <button class="clear-table-btn" onclick="clearTable('strengthTableBody', this)">Clear All Strengths</button>
+                <button class="save-table-btn" id="saveStrengthsBtn" onclick="saveTable('strengths', this)">Save Table</button>
             </div>
 
             <div class="data-table-container">
@@ -830,10 +784,11 @@
             <p>A recurring safety issue the plant struggles to manage consistently.</p>
             <div class="input-controls">
                 <input type="text" id="challengeDetail" class="input-field" placeholder="Enter a recurring safety challenge...">
-                <button onclick="addEntry('challengeDetail', 'challenges')">Add Challenge</button>
+                <button onclick="addEntry('challengeDetail', 'challengeTableBody', 'challenges')">Add Challenge</button>
             </div>
             <div class="table-controls">
-                <button class="clear-table-btn" onclick="clearTable('challenges')">Clear All Challenges</button>
+                <button class="clear-table-btn" onclick="clearTable('challengeTableBody', this)">Clear All Challenges</button>
+                <button class="save-table-btn" id="saveChallengesBtn" onclick="saveTable('challenges', this)">Save Table</button>
             </div>
 
             <div class="data-table-container">
@@ -866,7 +821,7 @@
 
         <div class="save-meeting-btn-container">
             <button class="save-meeting-btn" onclick="saveAllMeetingData()">
-                <span class="button-default-text">Sync All Data to Cloud</span>
+                <span class="button-default-text">Save All Meeting Data</span>
                 <span class="viking-animated-text">Viking Plastics</span>
             </button>
             
@@ -874,142 +829,37 @@
                 <button class="export-btn" onclick="exportAsText()">
                     <i>📄</i> Export as Text File
                 </button>
+                <button class="export-btn" onclick="exportAsPDF()">
+                    <i>📊</i> Export as PDF
+                </button>
             </div>
             
-            <p style="margin-top: 10px; font-size: 0.9em; color: #666;">(All changes sync automatically across your devices)</p>
+            <p style="margin-top: 10px; font-size: 0.9em; color: #666;">(This ensures all tables and the next meeting date are saved to your browser.)</p>
         </div>
     </div>
 
     <footer>
-        <p>Viking Plastics Safety Meeting System | Real-Time Sync Enabled</p>
+        <p>Viking Plastics Safety Meeting System | Designed for the Kentucky Plant</p>
         <p>© 2023 Viking Plastics. All rights reserved.</p>
     </footer>
 
     <script>
-        // Replace with your Firebase config
-        const firebaseConfig = {
-            apiKey: "AIzaSyD6SxQdU5v6bGx3yJg-7f3Zz4W8v7y4b0c",
-            authDomain: "viking-plastics-safety.firebaseapp.com",
-            projectId: "viking-plastics-safety",
-            storageBucket: "viking-plastics-safety.appspot.com",
-            messagingSenderId: "123456789012",
-            appId: "1:123456789012:web:abcdef1234567890"
-        };
+        // Function to load data from localStorage
+        function loadData(key) {
+            const data = localStorage.getItem(key);
+            try {
+                return data ? JSON.parse(data) : [];
+            } catch (e) {
+                console.error("Error parsing localStorage data for key:", key, e);
+                return [];
+            }
+        }
 
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-        
-        // Reference to the meeting document
-        const meetingRef = db.collection("meetings").doc("vikingSafetyMeeting");
-        
-        // Update sync status
-        function updateSyncStatus(message, isSynced = false) {
-            const syncStatus = document.querySelector('.sync-status');
-            syncStatus.textContent = message;
-            if (isSynced) {
-                syncStatus.classList.add('synced');
-            } else {
-                syncStatus.classList.remove('synced');
-            }
+        // Function to save data to localStorage
+        function saveData(key, data) {
+            localStorage.setItem(key, JSON.stringify(data));
         }
-        
-        // Initialize meeting data
-        let meetingData = {
-            nextMeetingDate: '',
-            membersPresent: [],
-            oldActionItems: [],
-            newActionItems: [],
-            completedActions: [],
-            incidents: [],
-            safetyIdeas: [],
-            strengths: [],
-            challenges: []
-        };
-        
-        // Load meeting data from Firestore
-        function loadMeetingData() {
-            meetingRef.get().then((doc) => {
-                if (doc.exists) {
-                    meetingData = doc.data();
-                    renderAllTables();
-                    updateDateDisplay();
-                    updateSyncStatus("Data synced from cloud", true);
-                } else {
-                    // Initialize with empty data
-                    meetingRef.set(meetingData);
-                    updateSyncStatus("New meeting created", true);
-                }
-            }).catch((error) => {
-                console.error("Error loading meeting: ", error);
-                updateSyncStatus("Connection error - using offline data");
-            });
-        }
-        
-        // Set up real-time listener
-        function setupRealtimeListener() {
-            meetingRef.onSnapshot((doc) => {
-                if (doc.exists) {
-                    meetingData = doc.data();
-                    renderAllTables();
-                    updateDateDisplay();
-                    updateSyncStatus("Real-time update received", true);
-                    
-                    // Trigger animation
-                    const saveButton = document.querySelector('.save-meeting-btn');
-                    saveButton.classList.add('synced');
-                    setTimeout(() => saveButton.classList.remove('synced'), 2000);
-                }
-            }, (error) => {
-                console.error("Error in real-time listener: ", error);
-                updateSyncStatus("Realtime sync disconnected");
-            });
-        }
-        
-        // Save meeting data to Firestore
-        function saveMeetingToCloud() {
-            meetingRef.set(meetingData)
-                .then(() => {
-                    updateSyncStatus("Data saved to cloud", true);
-                })
-                .catch((error) => {
-                    console.error("Error saving meeting: ", error);
-                    updateSyncStatus("Failed to save to cloud");
-                });
-        }
-        
-        // Render all tables
-        function renderAllTables() {
-            renderTable('membersPresentTableBody', meetingData.membersPresent, 'membersPresent');
-            renderTable('oldActionItemsTableBody', meetingData.oldActionItems, 'oldActionItems');
-            renderTable('newActionItemsTableBody', meetingData.newActionItems, 'newActionItems');
-            renderTable('completedActionsTableBody', meetingData.completedActions, 'completedActions');
-            renderTable('incidentTableBody', meetingData.incidents, 'incidents');
-            renderTable('safetyIdeasTableBody', meetingData.safetyIdeas, 'safetyIdeas');
-            renderTable('strengthTableBody', meetingData.strengths, 'strengths');
-            renderTable('challengeTableBody', meetingData.challenges, 'challenges');
-        }
-        
-        // Update date display
-        function updateDateDisplay() {
-            const dateDisplay = document.getElementById('dateDisplay');
-            const saveDateBtn = document.getElementById('saveNextMeetingDateBtn');
-            const clearDateBtn = document.getElementById('clearNextMeetingDateBtn');
-            
-            if (meetingData.nextMeetingDate) {
-                const dateObj = new Date(meetingData.nextMeetingDate);
-                const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-                const formattedDate = dateObj.toLocaleDateString('en-US', options);
-                dateDisplay.innerHTML = `<strong>Next Meeting:</strong> ${formattedDate}`;
-                clearDateBtn.style.display = 'inline-block';
-                saveDateBtn.style.display = 'none';
-            } else {
-                dateDisplay.textContent = '';
-                clearDateBtn.style.display = 'none';
-                saveDateBtn.style.display = 'inline-block';
-            }
-        }
-        
+
         // --- Main Save Button Animation Control ---
         function triggerButtonVikingAnimation() {
             const saveButton = document.querySelector('.save-meeting-btn');
@@ -1030,35 +880,127 @@
                 animatedText.classList.remove('animate');
             }, 1800);
         }
-        
-        // Function to remove a row from a table
-        function removeRow(row, storageKey, index) {
-            meetingData[storageKey].splice(index, 1);
-            saveMeetingToCloud();
+
+        // --- VP Saving Animation for Individual Buttons ---
+        function triggerVpSaveAnimation(buttonElement) {
+            // Prevent multiple animations if clicked rapidly
+            if (buttonElement.querySelector('.vp-saving-animation')) {
+                return;
+            }
+
+            const vpAnimation = document.createElement('span');
+            vpAnimation.textContent = 'VP';
+            vpAnimation.className = 'vp-saving-animation';
+            buttonElement.appendChild(vpAnimation);
+
+            // Trigger reflow to restart animation
+            void vpAnimation.offsetWidth;
+            vpAnimation.classList.add('animate');
+
+            // Remove the animation element after it completes
+            vpAnimation.addEventListener('animationend', () => {
+                vpAnimation.remove();
+            }, { once: true });
         }
 
-        // Function to clear a table
-        function clearTable(storageKey) {
-            meetingData[storageKey] = [];
-            saveMeetingToCloud();
+        // Function to remove a row from a table and update localStorage
+        function removeRow(row, storageKey) {
+            const tableBody = row.parentNode;
+            const itemIndex = parseInt(row.getAttribute('data-index'));
+
+            const data = loadData(storageKey);
+            const newData = data.filter((_, index) => index !== itemIndex);
+
+            saveData(storageKey, newData);
+            renderTable(tableBody.id, newData, storageKey);
         }
 
-        // Generic function to add an entry
-        function addEntry(inputId, storageKey) {
+        // Function to clear all rows from a table and localStorage
+        function clearTable(tableBodyId, buttonElement) {
+            // Trigger clear button animation
+            if (buttonElement) {
+                buttonElement.classList.remove('clear-pulsing');
+                void buttonElement.offsetWidth;
+                buttonElement.classList.add('clear-pulsing');
+            }
+
+            const tableBody = document.getElementById(tableBodyId);
+            while (tableBody.firstChild) {
+                tableBody.removeChild(tableBody.firstChild);
+            }
+            const storageKeyMap = {
+                'membersPresentTableBody': 'membersPresent',
+                'oldActionItemsTableBody': 'oldActionItems',
+                'newActionItemsTableBody': 'newActionItems',
+                'completedActionsTableBody': 'completedActions',
+                'incidentTableBody': 'incidents',
+                'strengthTableBody': 'strengths',
+                'challengeTableBody': 'challenges',
+                'safetyIdeasTableBody': 'safetyIdeas'
+            };
+            saveData(storageKeyMap[tableBodyId], []);
+        }
+
+        // Explicit Save Table Function - Now triggers VP animation
+        function saveTable(storageKey, buttonElement) {
+            const tableBodyIdMap = {
+                'membersPresent': 'membersPresentTableBody',
+                'oldActionItems': 'oldActionItemsTableBody',
+                'newActionItems': 'newActionItemsTableBody',
+                'completedActions': 'completedActionsTableBody',
+                'incidents': 'incidentTableBody',
+                'strengths': 'strengthTableBody',
+                'challenges': 'challengeTableBody',
+                'safetyIdeas': 'safetyIdeasTableBody'
+            };
+            const tableBody = document.getElementById(tableBodyIdMap[storageKey]);
+            const rows = tableBody.getElementsByTagName('tr');
+            const dataToSave = [];
+
+            if (storageKey === 'membersPresent') {
+                for (let i = 0; i < rows.length; i++) {
+                    const cells = rows[i].getElementsByTagName('td');
+                    if (cells.length >= 3) {
+                        dataToSave.push({
+                            name: cells[0].textContent,
+                            role: cells[1].textContent,
+                            date: cells[2].textContent
+                        });
+                    }
+                }
+            } else {
+                for (let i = 0; i < rows.length; i++) {
+                    const cells = rows[i].getElementsByTagName('td');
+                    if (cells.length >= 2) {
+                        dataToSave.push({
+                            content: cells[0].textContent,
+                            date: cells[1].textContent
+                        });
+                    }
+                }
+            }
+            saveData(storageKey, dataToSave);
+            // Trigger the "VP" animation on the clicked button
+            if (buttonElement) {
+                triggerVpSaveAnimation(buttonElement);
+            }
+        }
+
+        // Generic function to add an entry to any specified table
+        function addEntry(inputId, tableBodyId, storageKey) {
             const inputElement = document.getElementById(inputId);
             const content = inputElement.value.trim();
 
             if (content) {
-                meetingData[storageKey].push({ 
-                    content: content, 
-                    date: new Date().toLocaleDateString() 
-                });
+                const data = loadData(storageKey);
+                data.push({ content: content, date: new Date().toLocaleDateString() });
+                saveData(storageKey, data);
+                renderTable(tableBodyId, data, storageKey);
                 inputElement.value = '';
-                saveMeetingToCloud();
             }
         }
 
-        // Specific function for Members Present
+        // Specific function for Members Present (with name and role)
         function addMember() {
             const nameInput = document.getElementById('memberNameInput');
             const roleInput = document.getElementById('memberRoleInput');
@@ -1066,14 +1008,12 @@
             const role = roleInput.value.trim();
 
             if (name) {
-                meetingData.membersPresent.push({ 
-                    name: name, 
-                    role: role, 
-                    date: new Date().toLocaleDateString() 
-                });
+                const members = loadData('membersPresent');
+                members.push({ name: name, role: role, date: new Date().toLocaleDateString() });
+                saveData('membersPresent', members);
+                renderTable('membersPresentTableBody', members, 'membersPresent');
                 nameInput.value = '';
                 roleInput.value = '';
-                saveMeetingToCloud();
             } else {
                 alert('Please enter a member name.');
             }
@@ -1085,8 +1025,21 @@
             const dateValue = dateInput.value;
             
             if (dateValue) {
-                meetingData.nextMeetingDate = dateValue;
-                saveMeetingToCloud();
+                localStorage.setItem('nextMeetingDate', dateValue);
+                
+                // Format date correctly without timezone issues
+                const dateObj = new Date(dateValue);
+                const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                const formattedDate = dateObj.toLocaleDateString('en-US', options);
+                
+                document.getElementById('dateDisplay').innerHTML = `<strong>Next Meeting:</strong> ${formattedDate}`;
+                
+                // Show Clear button, hide Save button
+                document.getElementById('clearNextMeetingDateBtn').style.display = 'inline-block';
+                document.getElementById('saveNextMeetingDateBtn').style.display = 'none';
+                
+                // Trigger animation on save button
+                triggerVpSaveAnimation(document.getElementById('saveNextMeetingDateBtn'));
             } else {
                 alert('Please select a date.');
             }
@@ -1094,11 +1047,14 @@
 
         // Function to clear the saved date
         function clearDate() {
-            meetingData.nextMeetingDate = '';
-            saveMeetingToCloud();
+            localStorage.removeItem('nextMeetingDate');
+            document.getElementById('nextMeetingDate').value = '';
+            document.getElementById('dateDisplay').textContent = '';
+            document.getElementById('clearNextMeetingDateBtn').style.display = 'none';
+            document.getElementById('saveNextMeetingDateBtn').style.display = 'inline-block';
         }
 
-        // Function to render a table
+        // Function to render the table from stored data
         function renderTable(tableBodyId, data, storageKey) {
             const tableBody = document.getElementById(tableBodyId);
             tableBody.innerHTML = '';
@@ -1121,7 +1077,7 @@
                     removeBtn.textContent = 'Remove';
                     removeBtn.className = 'remove-btn';
                     removeBtn.onclick = function() {
-                        removeRow(row, storageKey, index);
+                        removeRow(row, storageKey);
                     };
                     actionCell.appendChild(removeBtn);
                 } else {
@@ -1136,45 +1092,53 @@
                     removeBtn.textContent = 'Remove';
                     removeBtn.className = 'remove-btn';
                     removeBtn.onclick = function() {
-                        removeRow(row, storageKey, index);
+                        removeRow(row, storageKey);
                     };
                     actionCell.appendChild(removeBtn);
                 }
             });
         }
 
-        // Function to save all meeting data
-        function saveAllMeetingData() {
-            triggerButtonVikingAnimation();
-            setTimeout(() => {
-                saveMeetingToCloud();
-                alert('All meeting data has been synced to the cloud!');
-            }, 1800);
+        // Function to gather all meeting data
+        function gatherMeetingData() {
+            const data = {
+                meetingDate: localStorage.getItem('nextMeetingDate') || '',
+                membersPresent: loadData('membersPresent'),
+                oldActionItems: loadData('oldActionItems'),
+                newActionItems: loadData('newActionItems'),
+                completedActions: loadData('completedActions'),
+                incidents: loadData('incidents'),
+                safetyIdeas: loadData('safetyIdeas'),
+                strengths: loadData('strengths'),
+                challenges: loadData('challenges')
+            };
+            
+            return data;
         }
         
-        // Function to export as text file
-        function exportAsText() {
+        // Function to format meeting data as text
+        function formatMeetingDataAsText(data) {
             let text = "VIKING PLASTICS SAFETY MEETING REPORT\n";
             text += "======================================\n\n";
             
             // Format date
-            if (meetingData.nextMeetingDate) {
-                const dateObj = new Date(meetingData.nextMeetingDate);
+            if (data.meetingDate) {
+                const dateObj = new Date(data.meetingDate);
                 const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
                 const formattedDate = dateObj.toLocaleDateString('en-US', options);
-                text += `Next Meeting: ${formattedDate}\n\n`;
+                text += `Next Meeting Date: ${formattedDate}\n\n`;
             }
             
             // Format each section
             const sections = [
-                { title: "MEMBERS PRESENT", data: meetingData.membersPresent, type: "members" },
-                { title: "OLD ACTION ITEMS", data: meetingData.oldActionItems, type: "items" },
-                { title: "NEW ACTION ITEMS", data: meetingData.newActionItems, type: "items" },
-                { title: "COMPLETED ACTIONS", data: meetingData.completedActions, type: "items" },
-                { title: "INCIDENTS/ACCIDENTS", data: meetingData.incidents, type: "items" },
-                { title: "SAFETY IDEAS/SUGGESTIONS", data: meetingData.safetyIdeas, type: "items" },
-                { title: "KEY STRENGTHS", data: meetingData.strengths, type: "items" },
-                { title: "KEY CHALLENGES", data: meetingData.challenges, type: "items" }
+                { title: "MEMBERS PRESENT", data: data.membersPresent, type: "members" },
+                { title: "OLD ACTION ITEMS", data: data.oldActionItems, type: "items" },
+                { title: "NEW ACTION ITEMS", data: data.newActionItems, type: "items" },
+                { title: "COMPLETED ACTIONS", data: data.completedActions, type: "items" },
+                { title: "INCIDENTS/ACCIDENTS", data: data.incidents, type: "items" },
+                { title: "SAFETY IDEAS/SUGGESTIONS", data: data.safetyIdeas, type: "items" },
+                { title: "KEY STRENGTHS", data: data.strengths, type: "items" },
+                { title: "KEY CHALLENGES", data: data.challenges, type: "items" }
             ];
             
             sections.forEach(section => {
@@ -1184,11 +1148,11 @@
                     
                     if (section.type === "members") {
                         section.data.forEach((item, index) => {
-                            text += `${index + 1}. ${item.name} (${item.role}) - ${item.date}\n`;
+                            text += `${index + 1}. ${item.name} (${item.role}) - Added: ${item.date}\n`;
                         });
                     } else {
                         section.data.forEach((item, index) => {
-                            text += `${index + 1}. ${item.content} - ${item.date}\n`;
+                            text += `${index + 1}. ${item.content} - Added: ${item.date}\n`;
                         });
                     }
                     
@@ -1196,7 +1160,15 @@
                 }
             });
             
-            const blob = new Blob([text], { type: 'text/plain' });
+            return text;
+        }
+        
+        // Function to export as text file
+        function exportAsText() {
+            const meetingData = gatherMeetingData();
+            const textContent = formatMeetingDataAsText(meetingData);
+            
+            const blob = new Blob([textContent], { type: 'text/plain' });
             const url = URL.createObjectURL(blob);
             
             const a = document.createElement('a');
@@ -1214,23 +1186,84 @@
                 window.URL.revokeObjectURL(url);
             }, 100);
         }
+        
+        // Function to export as PDF
+        function exportAsPDF() {
+            alert("PDF export functionality would require a server-side component or specialized library. For now, please use the 'Export as Text File' option.");
+        }
 
-        // Initialize the app
+        // Function to save all relevant meeting data
+        function saveAllMeetingData() {
+            triggerButtonVikingAnimation();
+
+            // Execute all save operations after a short delay
+            setTimeout(() => {
+                saveTable('membersPresent');
+                saveTable('oldActionItems');
+                saveTable('newActionItems');
+                saveTable('completedActions');
+                saveTable('incidents');
+                saveTable('safetyIdeas');
+                saveTable('strengths');
+                saveTable('challenges');
+
+                const nextMeetingDateInput = document.getElementById('nextMeetingDate');
+                if (nextMeetingDateInput.value) {
+                    localStorage.setItem('nextMeetingDate', nextMeetingDateInput.value);
+                    
+                    // Format date correctly
+                    const dateObj = new Date(nextMeetingDateInput.value);
+                    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                    const formattedDate = dateObj.toLocaleDateString('en-US', options);
+                    
+                    document.getElementById('dateDisplay').innerHTML = `<strong>Next Meeting:</strong> ${formattedDate}`;
+                }
+
+                alert('All meeting data has been saved to your browser!');
+            }, 1800);
+        }
+
+        // Load data on page load for tables and next meeting date
         window.onload = function() {
-            // Initialize Firebase and load data
-            loadMeetingData();
-            setupRealtimeListener();
-            
-            // Date input event listener
+            renderTable('membersPresentTableBody', loadData('membersPresent'), 'membersPresent');
+            renderTable('oldActionItemsTableBody', loadData('oldActionItems'), 'oldActionItems');
+            renderTable('newActionItemsTableBody', loadData('newActionItems'), 'newActionItems');
+            renderTable('completedActionsTableBody', loadData('completedActions'), 'completedActions');
+            renderTable('incidentTableBody', loadData('incidents'), 'incidents');
+            renderTable('safetyIdeasTableBody', loadData('safetyIdeas'), 'safetyIdeas');
+            renderTable('strengthTableBody', loadData('strengths'), 'strengths');
+            renderTable('challengeTableBody', loadData('challenges'), 'challenges');
+
+            // Date initialization and event listeners
             const dateInput = document.getElementById('nextMeetingDate');
+            const dateDisplay = document.getElementById('dateDisplay');
+            const saveDateBtn = document.getElementById('saveNextMeetingDateBtn');
+            const clearDateBtn = document.getElementById('clearNextMeetingDateBtn');
+            
+            // Show selected date in real-time
             dateInput.addEventListener('change', function() {
                 if (this.value) {
                     const dateObj = new Date(this.value);
                     const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
                     const formattedDate = dateObj.toLocaleDateString('en-US', options);
-                    document.getElementById('dateDisplay').innerHTML = `<strong>Selected Date:</strong> ${formattedDate}`;
+                    dateDisplay.innerHTML = `<strong>Selected Date:</strong> ${formattedDate}`;
+                    
+                    // Show Save button if date is selected
+                    saveDateBtn.style.display = 'inline-block';
                 }
             });
+            
+            // Load saved date if exists
+            const savedDate = localStorage.getItem('nextMeetingDate');
+            if (savedDate) {
+                dateInput.value = savedDate;
+                const dateObj = new Date(savedDate);
+                const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                const formattedDate = dateObj.toLocaleDateString('en-US', options);
+                dateDisplay.innerHTML = `<strong>Next Meeting:</strong> ${formattedDate}`;
+                clearDateBtn.style.display = 'inline-block';
+                saveDateBtn.style.display = 'none';
+            }
         };
     </script>
 </body>
