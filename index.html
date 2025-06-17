@@ -16,16 +16,23 @@
             --button-color: #004A8F;
             --button-hover: #003a70;
             --section-padding: 30px 20px;
+            --success-green: #28a745;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
 
         body {
             font-family: 'Roboto', sans-serif;
-            margin: 0;
-            padding: 0;
             background-color: var(--light-gray);
             color: var(--dark-text);
             line-height: 1.6;
             background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+            min-height: 100vh;
+            padding-bottom: 40px;
         }
 
         header {
@@ -57,7 +64,8 @@
             text-align: center;
             white-space: nowrap;
             flex: 1;
-            padding: 0 60px; /* Added padding to center properly */
+            padding: 0 60px;
+            letter-spacing: 0.5px;
         }
 
         .container {
@@ -89,6 +97,14 @@
             border-bottom: 2px solid var(--primary-blue);
             padding-bottom: 10px;
             font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        h2 i {
+            font-size: 0.8em;
+            opacity: 0.7;
         }
 
         h3 {
@@ -306,7 +322,7 @@
         .save-meeting-btn-container {
             text-align: center;
             margin-top: 30px;
-            margin-bottom: 50px;
+            margin-bottom: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -349,7 +365,6 @@
             position: absolute;
         }
 
-        /* Fixed animation size */
         .save-meeting-btn .viking-animated-text {
             position: absolute;
             top: 50%;
@@ -357,7 +372,7 @@
             transform: translate(-50%, -50%) scale(0.8);
             opacity: 0;
             color: #ffffff;
-            font-size: 1.4em; /* Adjusted size */
+            font-size: 1.4em;
             font-weight: 900;
             white-space: nowrap;
             pointer-events: none;
@@ -427,14 +442,12 @@
             }
         }
 
-        /* Date buttons container */
         .date-controls {
             display: flex;
             gap: 10px;
             margin-top: 10px;
         }
 
-        /* Clear date button style */
         .clear-date-btn {
             background-color: #dc3545;
             color: white;
@@ -449,7 +462,6 @@
             background-color: #c82333;
         }
         
-        /* Export buttons */
         .export-buttons {
             display: flex;
             gap: 10px;
@@ -459,6 +471,7 @@
         
         .export-btn {
             background-color: #28a745;
+            color: white;
             padding: 10px 20px;
             border-radius: 5px;
             font-weight: 600;
@@ -476,7 +489,6 @@
             font-size: 1.2em;
         }
         
-        /* Footer */
         footer {
             text-align: center;
             padding: 20px;
@@ -484,6 +496,25 @@
             font-size: 0.9em;
             margin-top: 30px;
             border-top: 1px solid #ddd;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+        }
+
+        .meeting-date-display {
+            text-align: center;
+            padding: 10px;
+            background-color: var(--header-bg);
+            color: white;
+            font-weight: 600;
+            margin-bottom: 20px;
+            border-radius: 0 0 8px 8px;
+            position: sticky;
+            top: 70px;
+            z-index: 999;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
         /* Mobile Responsiveness */
@@ -498,7 +529,7 @@
                 position: relative;
                 left: auto;
                 margin-right: 0;
-                margin-bottom: 5px;
+                margin-bottom: 10px;
             }
             header h1 {
                 font-size: 1.8em;
@@ -561,6 +592,12 @@
             .export-buttons {
                 flex-direction: column;
             }
+            
+            .meeting-date-display {
+                top: 60px;
+                font-size: 0.9em;
+                padding: 8px;
+            }
         }
     </style>
 </head>
@@ -569,6 +606,10 @@
         <img src="vikinglogo.png" alt="Viking Plastics Logo" class="logo">
         <h1>Viking Plastics Safety Meeting</h1>
     </header>
+
+    <div class="meeting-date-display" id="meetingDateDisplay">
+        Meeting Date: <span id="currentDateDisplay"></span>
+    </div>
 
     <div class="container">
         <section>
@@ -829,12 +870,12 @@
                 <button class="export-btn" onclick="exportAsText()">
                     <i>📄</i> Export as Text File
                 </button>
-                <button class="export-btn" onclick="exportAsPDF()">
-                    <i>📊</i> Export as PDF
+                <button class="export-btn" onclick="printMeeting()">
+                    <i>🖨️</i> Print Meeting
                 </button>
             </div>
             
-            <p style="margin-top: 10px; font-size: 0.9em; color: #666;">(This ensures all tables and the next meeting date are saved to your browser.)</p>
+            <p style="margin-top: 10px; font-size: 0.9em; color: #666;">(Data is saved to your device and available across all pages)</p>
         </div>
     </div>
 
@@ -1102,7 +1143,7 @@
         // Function to gather all meeting data
         function gatherMeetingData() {
             const data = {
-                meetingDate: localStorage.getItem('nextMeetingDate') || '',
+                nextMeetingDate: localStorage.getItem('nextMeetingDate') || '',
                 membersPresent: loadData('membersPresent'),
                 oldActionItems: loadData('oldActionItems'),
                 newActionItems: loadData('newActionItems'),
@@ -1122,8 +1163,8 @@
             text += "======================================\n\n";
             
             // Format date
-            if (data.meetingDate) {
-                const dateObj = new Date(data.meetingDate);
+            if (data.nextMeetingDate) {
+                const dateObj = new Date(data.nextMeetingDate);
                 const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
                 const formattedDate = dateObj.toLocaleDateString('en-US', options);
                 text += `Next Meeting Date: ${formattedDate}\n\n`;
@@ -1187,9 +1228,9 @@
             }, 100);
         }
         
-        // Function to export as PDF
-        function exportAsPDF() {
-            alert("PDF export functionality would require a server-side component or specialized library. For now, please use the 'Export as Text File' option.");
+        // Print meeting function
+        function printMeeting() {
+            window.print();
         }
 
         // Function to save all relevant meeting data
@@ -1219,12 +1260,17 @@
                     document.getElementById('dateDisplay').innerHTML = `<strong>Next Meeting:</strong> ${formattedDate}`;
                 }
 
-                alert('All meeting data has been saved to your browser!');
+                alert('All meeting data has been saved to your device!');
             }, 1800);
         }
 
         // Load data on page load for tables and next meeting date
         window.onload = function() {
+            // Update current date display
+            const currentDate = new Date();
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('currentDateDisplay').textContent = currentDate.toLocaleDateString('en-US', options);
+            
             renderTable('membersPresentTableBody', loadData('membersPresent'), 'membersPresent');
             renderTable('oldActionItemsTableBody', loadData('oldActionItems'), 'oldActionItems');
             renderTable('newActionItemsTableBody', loadData('newActionItems'), 'newActionItems');
